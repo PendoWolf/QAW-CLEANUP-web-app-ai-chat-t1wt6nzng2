@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearSession();
       setSession(null);
       // Reset Pendo to a fresh anonymous visitor so the next user isn't tracked as this one.
-      pendo.clearSession();
+      // The install snippet doesn't stub clearSession, so skip it if the agent never loaded.
+      pendo.clearSession?.();
     }
   }, []);
 
