@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { trackEvent } from "../analytics/pendo";
 import { usersApi } from "../api/users";
 import { useAuth } from "../auth/AuthContext";
 
@@ -19,8 +20,16 @@ export function AccountPage() {
     setSaving(true);
     setMessage(null);
     try {
-      updateUser(await usersApi.update(user.id, { name: name.trim(), email: email.trim() }));
+      const updated = await usersApi.update(user.id, { name: name.trim(), email: email.trim() });
+      updateUser(updated);
       setMessage("Profile saved.");
+      // The API saved the profile and "Profile saved." is shown.
+      trackEvent("Profile updated", {
+        name_changed: updated.name !== user.name,
+        email_changed: updated.email !== user.email,
+        user_role: user.role,
+        account_plan: account.plan,
+      });
     } catch (e) {
       setMessage((e as Error).message);
     } finally {
